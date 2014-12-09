@@ -3,10 +3,13 @@
 /* apiserver.c */
 
 /*
-  A single-purpose "HTTP server" that provides an OTP REST API for RRRR.
-  It ignores everything but lines matching the pattern: GET *?querystring
-  It then sends the response back to the HTTP client and closes the connection.
-  It is event-driven (single-threaded, single-process) and multiplexes all TCP and ZMQ communication via a polling loop.
+  A single-purpose "HTTP server" library for building minimal web services.
+  Adapted from code originally developed for the RRRR OTP compatibility layer.
+  It ignores everything but lines matching the pattern 'GET *?querystring'.
+
+  All incoming IO is multiplexed via a portable polling mechanism (POSIX poll).
+  Once a full request has been received, it is passed off to a waiting handler thread.
+  The handler thread is given a socket descriptor and can stream results back as it pleases.
 */
 
 // $ time for i in {1..2000}; do curl localhost:9393/plan?0; done
@@ -343,12 +346,6 @@ void *thread_spin (void *params) {
   clients. Once a complete request has been assembled, place the request on a queue and wake up a
   handler thread to actually compute the response. The handler thread is handed a socket descriptor
   and can write whatever it wants as a response.
-  
-  All incoming IO is multiplexed via polling mechanism (select/poll/epoll).
-  Note that a process can usually only have up to 1024 file descriptors open at once.
-  Once a full request has been received, it is passed off to a waiting handler thread.
-  The handler thread is given a socket descriptor and can stream results back as it pleases.
-
 */
 int main (int argc, char **argv) {
 
