@@ -245,6 +245,9 @@ static void send_request (int nc, void *broker_socket) {
     return;
 }
 
+/*
+  This can be called by the client of the apiserver library to provide a simple fixed-length response.
+*/
 void respond (int sd, char *response) {
     char buf[512];
     sprintf (buf, OK_TEXT_PLAIN "Content-Length: %zu" CRLF "Connection: close" END_HEADERS, strlen (response));
